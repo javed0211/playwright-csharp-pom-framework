@@ -1,0 +1,9 @@
+services:
+  tests:
+    build: .
+    environment:
+      NEXUS_ENVIRONMENT: CI
+      HEADED: "0"
+      BROWSER: chromium
+    volumes:
+      - ./artifacts:/src/artifacts

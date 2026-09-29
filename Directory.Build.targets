@@ -1,0 +1,8 @@
+<Project>
+  <ItemGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
+    <Content Include="$(MSBuildThisFileDirectory)config/appsettings*.json" Link="config/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup Condition="$(MSBuildProjectName.EndsWith('Api.Tests'))">
+    <Content Include="$(MSBuildThisFileDirectory)contracts/*.json" Link="contracts/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Playwright.NUnit" Version="1.63.0" />
+    <PackageReference Include="NUnit" Version="4.2.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PlaywrightPom.Core\PlaywrightPom.Core.csproj" />
+    <ProjectReference Include="..\PlaywrightPom.Reporting\PlaywrightPom.Reporting.csproj" />
+    <ProjectReference Include="..\PlaywrightPom.Web\PlaywrightPom.Web.csproj" />
+    <ProjectReference Include="..\PlaywrightPom.Api\PlaywrightPom.Api.csproj" />
+  </ItemGroup>
+
+</Project>

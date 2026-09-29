@@ -1,0 +1,107 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  buildConfiguration: Release
+  DOTNET_VERSION: 9.0.x
+  NEXUS_ENVIRONMENT: CI
+  HEADED: 0
+
+stages:
+  - stage: Build
+    jobs:
+      - job: Compile
+        steps:
+          - task: UseDotNet@2
+            inputs:
+              packageType: sdk
+              version: $(DOTNET_VERSION)
+          - script: dotnet restore PlaywrightPom.sln
+            displayName: Restore
+          - script: dotnet build PlaywrightPom.sln -c $(buildConfiguration) --no-restore
+            displayName: Build
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: $(Build.SourcesDirectory)
+              artifact: sources
+            displayName: Publish sources
+
+  - stage: Test
+    dependsOn: Build
+    jobs:
+      - job: Unit
+        steps:
+          - task: UseDotNet@2
+            inputs:
+              packageType: sdk
+              version: $(DOTNET_VERSION)
+          - script: dotnet test tests/PlaywrightPom.Core.Tests/PlaywrightPom.Core.Tests.csproj -c $(buildConfiguration) --settings runsettings/ci.runsettings --logger trx
+            displayName: Unit tests
+          - task: PublishTestResults@2
+            condition: always()
+            inputs:
+              testResultsFormat: VSTest
+              testResultsFiles: "**/*.trx"
+              mergeTestResults: true
+              testRunTitle: Unit
+
+      - job: Api
+        steps:
+          - task: UseDotNet@2
+            inputs:
+              packageType: sdk
+              version: $(DOTNET_VERSION)
+          - script: dotnet test tests/PlaywrightPom.Api.Tests/PlaywrightPom.Api.Tests.csproj -c $(buildConfiguration) --settings runsettings/ci.runsettings --logger trx
+            displayName: API tests
+          - task: PublishTestResults@2
+            condition: always()
+            inputs:
+              testResultsFormat: VSTest
+              testResultsFiles: "**/*.trx"
+              mergeTestResults: true
+              testRunTitle: API
+          - task: PublishPipelineArtifact@1
+            condition: always()
+            inputs:
+              targetPath: artifacts
+              artifact: api-report
+
+      - job: Web
+        variables:
+          BROWSER: chromium
+        steps:
+          - task: UseDotNet@2
+            inputs:
+              packageType: sdk
+              version: $(DOTNET_VERSION)
+          - script: dotnet build tests/PlaywrightPom.Web.Tests/PlaywrightPom.Web.Tests.csproj -c $(buildConfiguration)
+            displayName: Build web tests
+          - script: |
+              out="$(find tests/PlaywrightPom.Web.Tests/bin/Release -type d -name net9.0 | head -n 1)"
+              nodebin="$(find "$out/.playwright/node" -type f -name node | head -n 1)"
+              "$nodebin" "$out/.playwright/package/cli.js" install --with-deps chromium
+            displayName: Install Chromium
+          - script: dotnet test tests/PlaywrightPom.Web.Tests/PlaywrightPom.Web.Tests.csproj -c $(buildConfiguration) --no-build --settings runsettings/ci.runsettings --logger trx
+            displayName: Web tests
+          - task: PublishTestResults@2
+            condition: always()
+            inputs:
+              testResultsFormat: VSTest
+              testResultsFiles: "**/*.trx"
+              mergeTestResults: true
+              testRunTitle: Web
+          - task: PublishPipelineArtifact@1
+            condition: always()
+            inputs:
+              targetPath: artifacts
+              artifact: web-report

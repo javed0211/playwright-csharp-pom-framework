@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "required": ["accessToken", "refreshToken", "username", "id"],
+  "properties": {
+    "id": { "type": "integer" },
+    "username": { "type": "string", "minLength": 1 },
+    "email": { "type": "string" },
+    "accessToken": { "type": "string", "minLength": 20 },
+    "refreshToken": { "type": "string", "minLength": 20 }
+  }
+}
