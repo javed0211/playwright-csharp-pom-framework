@@ -485,6 +485,8 @@ $RECYCLE.BIN/
 
 # Framework outputs
 artifacts/
+# ...but not source folders named Artifacts (git on macOS and Windows matches names case-insensitively)
+!src/**/Artifacts/
 reports/
 .playwright/
 *.trace.zip
